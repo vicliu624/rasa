@@ -286,8 +286,8 @@ class Domain:
         slots = []
         # make a copy to not alter the input dictionary
         slot_dict = copy.deepcopy(slot_dict)
-        # Sort the slots so that the order of the slot states is consistent
-        for slot_name in sorted(slot_dict):
+        # Don't sort the slots, see https://github.com/RasaHQ/rasa-x/issues/3900
+        for slot_name in slot_dict:
             slot_type = slot_dict[slot_name].pop("type", None)
             slot_class = Slot.resolve_by_type(slot_type)
 
