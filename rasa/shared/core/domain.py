@@ -3,6 +3,7 @@ import collections
 import json
 import logging
 import os
+import textwrap
 from enum import Enum
 from typing import (
     Any,
@@ -52,6 +53,7 @@ KEY_RESPONSES = "responses"
 KEY_ACTIONS = "actions"
 KEY_FORMS = "forms"
 KEY_E2E_ACTIONS = "e2e_actions"
+KEY_RESPONSES_TEXT = "text"
 
 ALL_DOMAIN_KEYS = [
     KEY_SLOTS,
@@ -1045,11 +1047,41 @@ class Domain:
             KEY_INTENTS: self._transform_intents_for_file(),
             KEY_ENTITIES: self._transform_entities_for_file(),
             KEY_SLOTS: self._slot_definitions(),
-            KEY_RESPONSES: self.templates,
+            KEY_RESPONSES: self._responses_with_multilines(self.templates),
             KEY_ACTIONS: self._custom_actions,  # class names of the actions
             KEY_FORMS: self.forms,
             KEY_E2E_ACTIONS: self.action_texts,
         }
+
+    @staticmethod
+    def _responses_with_multilines(
+        responses: Dict[Text, List[Dict[Text, Any]]]
+    ) -> Dict[Text, List[Dict[Text, Any]]]:
+        """Return `responses` with preserved multilines in the `text` key.
+
+        Args:
+            responses: Original `responses`.
+
+        Returns:
+            `responses` with preserved multilines in the `text` key.
+        """
+        from ruamel.yaml.scalarstring import (
+            LiteralScalarString,
+            DoubleQuotedScalarString,
+        )
+
+        final_responses = responses
+        for response, items in final_responses.items():
+            if len(items) == 1 and isinstance(items[0], dict):
+                response_text = items[0].get(KEY_RESPONSES_TEXT, "")
+                if response_text:
+                    if "\n" in response_text:
+                        final_text = LiteralScalarString(response_text)
+                    else:
+                        final_text = DoubleQuotedScalarString(response_text)
+                    final_responses[response][0][KEY_RESPONSES_TEXT] = final_text
+
+        return final_responses
 
     def _transform_intents_for_file(self) -> List[Union[Text, Dict[Text, Any]]]:
         """Transform intent properties for displaying or writing into a domain file.

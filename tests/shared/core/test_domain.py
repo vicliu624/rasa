@@ -1184,3 +1184,22 @@ slots:
 
     domain = Domain.from_yaml(test_yaml)
     assert domain.as_yaml(clean_before_dump=True) == test_yaml
+
+
+def test_responses_text_multiline_is_preserved():
+    test_yaml = f"""version: '{LATEST_TRAINING_DATA_FORMAT_VERSION}'
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
+responses:
+  utter_confirm:
+  - text: |-
+      First line
+      Second line
+      Third line
+  utter_cancel:
+  - text: "First line"
+"""
+
+    domain = Domain.from_yaml(test_yaml)
+    assert domain.as_yaml(clean_before_dump=True) == test_yaml
