@@ -1047,14 +1047,14 @@ class Domain:
             KEY_INTENTS: self._transform_intents_for_file(),
             KEY_ENTITIES: self._transform_entities_for_file(),
             KEY_SLOTS: self._slot_definitions(),
-            KEY_RESPONSES: self._responses_with_multilines(self.templates),
+            KEY_RESPONSES: self.get_responses_with_multilines(self.templates),
             KEY_ACTIONS: self._custom_actions,  # class names of the actions
             KEY_FORMS: self.forms,
             KEY_E2E_ACTIONS: self.action_texts,
         }
 
     @staticmethod
-    def _responses_with_multilines(
+    def get_responses_with_multilines(
         responses: Dict[Text, List[Dict[Text, Any]]]
     ) -> Dict[Text, List[Dict[Text, Any]]]:
         """Return `responses` with preserved multilines in the `text` key.
@@ -1072,14 +1072,19 @@ class Domain:
 
         final_responses = responses
         for response, items in final_responses.items():
-            if len(items) == 1 and isinstance(items[0], dict):
-                response_text = items[0].get(KEY_RESPONSES_TEXT, "")
-                if response_text:
-                    if "\n" in response_text:
-                        final_text = LiteralScalarString(response_text)
-                    else:
-                        final_text = DoubleQuotedScalarString(response_text)
-                    final_responses[response][0][KEY_RESPONSES_TEXT] = final_text
+            if not len(items) == 1:
+                # should always be "1", but not guaranteed, see responses schema.
+                continue
+            response_text = items[0].get(KEY_RESPONSES_TEXT, "")
+            if not response_text:
+                continue
+            if "\n" in response_text:
+                # Has new lines, use `LiteralScalarString`
+                final_text = LiteralScalarString(response_text)
+            else:
+                # Doesn't have new lines, use `DoubleQuotedScalarString`
+                final_text = DoubleQuotedScalarString(response_text)
+            final_responses[response][0][KEY_RESPONSES_TEXT] = final_text
 
         return final_responses
 
