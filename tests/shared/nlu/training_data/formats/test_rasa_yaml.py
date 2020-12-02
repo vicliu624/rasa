@@ -452,8 +452,10 @@ def test_responses_text_multiline_is_preserved():
             First line
             Second line
             Third line
+        - text: One more response
         utter_cancel:
-        - text: "First line"
+        - text: First line
+        - text: Second line
     """
     )
 

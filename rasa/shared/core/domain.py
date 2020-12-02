@@ -1065,26 +1065,18 @@ class Domain:
         Returns:
             `responses` with preserved multilines in the `text` key.
         """
-        from ruamel.yaml.scalarstring import (
-            LiteralScalarString,
-            DoubleQuotedScalarString,
-        )
+        from ruamel.yaml.scalarstring import LiteralScalarString
 
-        final_responses = responses
-        for response, items in final_responses.items():
-            if not len(items) == 1:
-                # should always be "1", but not guaranteed, see responses schema.
-                continue
-            response_text = items[0].get(KEY_RESPONSES_TEXT, "")
-            if not response_text:
-                continue
-            if "\n" in response_text:
+        final_responses = responses.copy()
+        for response_name, examples in final_responses.items():
+            for i, example in enumerate(examples):
+                response_text = example.get(KEY_RESPONSES_TEXT, "")
+                if not response_text or "\n" not in response_text:
+                    continue
                 # Has new lines, use `LiteralScalarString`
-                final_text = LiteralScalarString(response_text)
-            else:
-                # Doesn't have new lines, use `DoubleQuotedScalarString`
-                final_text = DoubleQuotedScalarString(response_text)
-            final_responses[response][0][KEY_RESPONSES_TEXT] = final_text
+                final_responses[response_name][i][
+                    KEY_RESPONSES_TEXT
+                ] = LiteralScalarString(response_text)
 
         return final_responses
 

@@ -1197,8 +1197,10 @@ responses:
       First line
       Second line
       Third line
+  - text: One more response
   utter_cancel:
-  - text: "First line"
+  - text: First line
+  - text: Second line
 """
 
     domain = Domain.from_yaml(test_yaml)
