@@ -137,6 +137,7 @@ def test_core(
             "Rasa model and provide it via the '--model' argument."
         )
 
+    # TODO: test for classifier
     if isinstance(_agent.interpreter, RegexInterpreter):
         rasa.shared.utils.cli.print_warning(
             "No NLU model found. Using default 'RegexInterpreter' for end-to-end "
